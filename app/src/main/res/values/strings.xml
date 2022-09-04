@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">TVBox</string>
-    <string name="app_home">Home</string>
-    <string name="app_source"></string>
+    <string name="app_name">🐷🐷</string>
+    <string name="app_home">源</string>
+    <string name="app_source">https://jyt0106.github.io/t/tt2.json</string>
 
     // Home Page //
     <string name="hm_ok">Load Complete</string>
