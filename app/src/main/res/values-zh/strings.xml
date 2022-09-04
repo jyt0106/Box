@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">TVBox</string>
-    <string name="app_home">首页</string>
-    <string name="app_source"></string>
+    <string name="app_name">🐷</string>
+    <string name="app_home">源</string>
+    <string name="app_source">https://jyt0106.github.io/t/tt2.json</string>
 
     // Home Page //
-    <string name="hm_ok">加载成功</string>
-    <string name="hm_notok">加载失败</string>
+    <string name="hm_ok">🐷🐷开饭成功</string>
+    <string name="hm_notok">🐷🐷开饭失败</string>
     <string name="hm_retry">重试</string>
     <string name="hm_cancel">取消</string>
     <string name="hm_exit">再按一次返回键退出应用</string>
