@@ -19,7 +19,7 @@ import com.orhanobut.hawk.Hawk;
  * 远程文件配置
  */
 public class RemoteConfig {
-    private static String remoteUrl = "https://jyt0106.github.io/apk/remote.ini";
+    private static String remoteUrl = "https://gitea.com/jyt/Tan/raw/branch/main/apk/remote.ini";
     private static JsonObject remoteJsonObject;
     private static boolean isRemoteConfigOk;
 
