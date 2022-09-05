@@ -7,6 +7,12 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+
+
+import com.github.tvbox.osc.ui.dialog.UpdateDialog;
+
+
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
 
@@ -193,8 +199,9 @@ public class ModelSettingFragment extends BaseLazyFragment {
             @Override
             public void onClick(View v) {
                 FastClickCheckUtil.check(v);
-                AboutDialog dialog = new AboutDialog(mActivity);
-                dialog.show();
+               // AboutDialog dialog = new AboutDialog(mActivity);
+               // dialog.show();
+                UpdateDialog.checkUpdate(mActivity, false);
             }
         });
         findViewById(R.id.llWp).setOnClickListener(new View.OnClickListener() {
