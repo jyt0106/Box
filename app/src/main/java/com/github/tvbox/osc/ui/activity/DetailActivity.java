@@ -160,6 +160,8 @@ public class DetailActivity extends BaseActivity {
             tvPlay.setText(getString(R.string.det_expand));
         }
         tvPlay.requestFocus();
+         //禁用播放地址焦点
+        tvPlayUrl.setFocusable(false);
         tvSort.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
