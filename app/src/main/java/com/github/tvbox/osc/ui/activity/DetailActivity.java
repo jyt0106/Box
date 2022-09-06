@@ -497,7 +497,8 @@ public class DetailActivity extends BaseActivity {
                             } else
                                 flag.selected = false;
                         }
-
+                        //设置播放地址
+                        setTextShow(tvPlayUrl, "播放地址: ",vodInfo.seriesMap.get(vodInfo.playFlag).get(0).url);
                         seriesFlagAdapter.setNewData(vodInfo.seriesFlags);
                         mGridViewFlag.scrollToPosition(flagScrollTo);
 
@@ -519,6 +520,7 @@ public class DetailActivity extends BaseActivity {
                     llPlayerFragmentContainer.setVisibility(View.GONE);
                     llPlayerFragmentContainerBlock.setVisibility(View.GONE);
                 }
+                if(absXml != null && absXml.msg != null && !absXml.msg.isEmpty())Toast.makeText(DetailActivity.this, absXml.msg, Toast.LENGTH_SHORT).show();
             }
         });
     }
