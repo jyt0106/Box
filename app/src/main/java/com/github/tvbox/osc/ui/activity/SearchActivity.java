@@ -77,7 +77,7 @@ public class SearchActivity extends BaseActivity {
     protected int getLayoutResID() {
         return R.layout.activity_search;
     }
-
+private static Boolean hasKeyBoard;
     @Override
     protected void init() {
         initView();
