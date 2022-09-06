@@ -22,7 +22,7 @@ import com.github.tvbox.osc.util.FastClickCheckUtil;
 import com.github.tvbox.osc.viewmodel.SourceViewModel;
 import com.owen.tvrecyclerview.widget.TvRecyclerView;
 import com.owen.tvrecyclerview.widget.V7GridLayoutManager;
-
+import android.widget.Toast;
 /**
  * @author pj567
  * @date :2020/12/21
@@ -110,6 +110,12 @@ public class GridFragment extends BaseLazyFragment {
                     bundle.putString("sourceKey", video.sourceKey);
                     jumpActivity(DetailActivity.class, bundle);
                 }
+                else{
+                        if(video.id == null || video.id.isEmpty()){
+                            jumpActivity(SearchActivity.class, bundle);
+                        }else {
+                            jumpActivity(DetailActivity.class, bundle);
+                        }
             }
         });
         // takagen99 : Long Press to Fast Search
@@ -151,7 +157,12 @@ public class GridFragment extends BaseLazyFragment {
                     if (page == 1) {
                         showEmpty();
                     }
+                           if(page > maxPage){
+                        Toast.makeText(getContext(), "没有更多了", Toast.LENGTH_SHORT).show();
+                    }
                 }
+                if(absXml != null && absXml.msg != null && !absXml.msg.isEmpty())Toast.makeText(getContext(), absXml.msg, Toast.LENGTH_SHORT).show();
+              
                 if (page > maxPage) {
                     gridAdapter.loadMoreEnd();
                 } else {
@@ -168,6 +179,7 @@ public class GridFragment extends BaseLazyFragment {
     private void initData() {
         showLoading();
         isLoad = false;
+        scrollTop();
         sourceViewModel.getList(sortData, page);
     }
 
