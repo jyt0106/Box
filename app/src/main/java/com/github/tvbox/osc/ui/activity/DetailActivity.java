@@ -159,9 +159,9 @@ public class DetailActivity extends BaseActivity {
             getSupportFragmentManager().beginTransaction().show(playFragment).commitAllowingStateLoss();
             tvPlay.setText(getString(R.string.det_expand));
         }
-        tvPlay.requestFocus();
-         //禁用播放地址焦点
+           //禁用播放地址焦点
         tvPlayUrl.setFocusable(false);
+        tvPlay.requestFocus();
         tvSort.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
