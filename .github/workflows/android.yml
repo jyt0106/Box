@@ -3,7 +3,7 @@ name: Android CI
 on:
   push:
     branches: [ "main" ]
-  pull_request:name: APK-T Build
+  pull_request:name: APK-O Build
 
 on:
 #  push:
@@ -20,7 +20,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Clone Project
-        run: git clone -b main --depth=1 https://github.com/lm317379829/TVBoxOSC-T.git
+        run: git clone -b main --depth=1 https://github.com/jyt0106/Box.git
       - name: DIY
         run: |
           chmod +x DIY.sh
