@@ -44,7 +44,7 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
     - name: Build with Gradle
-      run: ./gradlew bname: APK-T Build
+      run: ./gradlew bname: APK-O Build
 
 on:
 #  push:
@@ -64,7 +64,7 @@ jobs:
         run: git clone -b main --depth=1 https://github.com/lm317379829/TVBoxOSC-T.git
       - name: DIY
         run: |
-          chmod +x diy-T.sh
+          chmod +x diy-O.sh
           bash ${{ github.workspace }}/diy-T.sh
       - name: Build With Gradle
         run: |
