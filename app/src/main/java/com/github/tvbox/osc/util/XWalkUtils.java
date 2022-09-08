@@ -4,7 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.widget.Toast;
 
-
+import org.xwalk.core.XWalkInitializer;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -18,7 +18,7 @@ import java.util.zip.ZipFile;
 
 public class XWalkUtils {
 
-    
+  private static XWalkInitializer xWalkInitializer = null;  
 
     public interface XWalkState {
         void success();
