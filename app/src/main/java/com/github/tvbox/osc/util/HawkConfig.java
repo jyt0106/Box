@@ -31,6 +31,7 @@ public class HawkConfig {
     public static final String LIVE_CONNECT_TIMEOUT = "live_connect_timeout";
     public static final String LIVE_SHOW_NET_SPEED = "live_show_net_speed";
     public static final String LIVE_SHOW_TIME = "live_show_time";
+    public static final String FAST_SEARCH_MODE = "fast_search_mode";
     public static final String HOME_SHOW_SOURCE = "show_source";
     public static final String HOME_LOCALE = "language"; // 0 中文 1 英文
 
