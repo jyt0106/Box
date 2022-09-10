@@ -14,7 +14,7 @@ import com.github.tvbox.osc.base.BaseLazyFragment;
 import com.github.tvbox.osc.bean.AbsXml;
 import com.github.tvbox.osc.bean.Movie;
 import com.github.tvbox.osc.bean.MovieSort;
-、import com.github.tvbox.osc.bean.SourceBean;
+import com.github.tvbox.osc.bean.SourceBean;
 import com.github.tvbox.osc.ui.activity.DetailActivity;
 import com.github.tvbox.osc.ui.activity.FastSearchActivity;
 import com.github.tvbox.osc.ui.activity.FastSearchActivity;
