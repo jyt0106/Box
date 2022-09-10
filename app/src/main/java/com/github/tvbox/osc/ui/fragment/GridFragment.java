@@ -1,7 +1,7 @@
 package com.github.tvbox.osc.ui.fragment;
 
 import android.os.Bundle;
-import android.view.View;
+import android.view.View; 
 import android.view.animation.BounceInterpolator;
 
 import androidx.lifecycle.Observer;
@@ -9,10 +9,12 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.github.tvbox.osc.R;
+import com.github.tvbox.osc.api.ApiConfig;
 import com.github.tvbox.osc.base.BaseLazyFragment;
 import com.github.tvbox.osc.bean.AbsXml;
 import com.github.tvbox.osc.bean.Movie;
 import com.github.tvbox.osc.bean.MovieSort;
+、import com.github.tvbox.osc.bean.SourceBean;
 import com.github.tvbox.osc.ui.activity.DetailActivity;
 import com.github.tvbox.osc.ui.activity.FastSearchActivity;
 import com.github.tvbox.osc.ui.activity.FastSearchActivity;
@@ -193,10 +195,17 @@ public class GridFragment extends BaseLazyFragment {
                     Bundle bundle = new Bundle();
                     bundle.putString("id", video.id);
                     bundle.putString("sourceKey", video.sourceKey);
-                      jumpActivity(DetailActivity.class, bundle);
+                    bundle.putString("title", video.name);
+
+                    SourceBean homeSourceBean = ApiConfig.get().getHomeSourceBean();
                     if(("12".indexOf(getUITag()) != -1) && video.tag.equals("folder")){
                         focusedView = view;
                         changeView(video.id);
+                    }
+                    else if(homeSourceBean.isQuickSearch() && Hawk.get(HawkConfig.FAST_SEARCH_MODE, false) && enableFastSearch()){
+                        jumpActivity(FastSearchActivity.class, bundle);
+                    }else{
+                        jumpActivity(DetailActivity.class, bundle);
                     }
                  
                       
