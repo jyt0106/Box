@@ -193,17 +193,14 @@ public class GridFragment extends BaseLazyFragment {
                     Bundle bundle = new Bundle();
                     bundle.putString("id", video.id);
                     bundle.putString("sourceKey", video.sourceKey);
-                    jumpActivity(DetailActivity.class, bundle);
-                    SourceBean homeSourceBean = ApiConfig.get().getHomeSourceBean();
+                    
                     if(("12".indexOf(getUITag()) != -1) && video.tag.equals("folder")){
                         focusedView = view;
                         changeView(video.id);
                     }
-                    else if(homeSourceBean.isQuickSearch() && Hawk.get(HawkConfig.FAST_SEARCH_MODE, false) && enableFastSearch()){
-                        jumpActivity(FastSearchActivity.class, bundle);
-                    }else{
+                    else if(homeSourceBean.isQuickSearch() && Hawk.get(HawkConfig.FAST_SEARCH_MODE, false) && enableFastSearch()){  
                         jumpActivity(DetailActivity.class, bundle);
-                         }
+                    }
                 }
             }
         });
