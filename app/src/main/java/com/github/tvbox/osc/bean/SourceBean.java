@@ -103,4 +103,7 @@ public class SourceBean {
     public void setJar(String jar) {
         this.jar = jar;
     }
+     public int getPlayerType() { return playerType; }
+
+    public void setPlayerType(int playerType) { this.playerType = playerType; }
 }
