@@ -1,5 +1,16 @@
 package com.github.tvbox.osc.ui.activity;
 
+
+//mao
+import android.app.PendingIntent;
+import android.app.RemoteAction;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.IntentFilter;
+import android.graphics.drawable.Icon;
+import androidx.annotation.RequiresApi;
+
+
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Rect;
@@ -118,6 +129,10 @@ public class DetailActivity extends BaseActivity {
      private boolean isReverse;
     private String preFlag="";
     private V7GridLayoutManager mGridViewLayoutMgr = null;
+    private BroadcastReceiver pipActionReceiver;
+     private static final int PIP_BOARDCAST_ACTION_PREV = 0;
+    private static final int PIP_BOARDCAST_ACTION_PLAYPAUSE = 1;
+    private static final int PIP_BOARDCAST_ACTION_NEXT = 2;
 
     @Override
     protected int getLayoutResID() {
