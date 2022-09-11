@@ -175,10 +175,12 @@ public class GridFragment extends BaseLazyFragment {
         }else{
             mGridView.setLayoutManager(new V7GridLayoutManager(this.mContext, isBaseOnWidth() ? 5 : 6));
         }
+           mGridView.setAdapter(adapter);
+        mGridView.setLayoutManager(new V7GridLayoutManager(this.mContext, this.spanCount));
         gridAdapter.setOnLoadMoreListener(new BaseQuickAdapter.RequestLoadMoreListener() {
             @Override
             public void onLoadMoreRequested() {
-                gridAdapter.setEnableLoadMore(true);
+                adapter.setEnableLoadMore(true);
                 sourceViewModel.getList(sortData, page);
             }
         }, mGridView);
@@ -208,11 +210,11 @@ public class GridFragment extends BaseLazyFragment {
                 return false;
             }
         });
-        gridAdapter.setOnItemClickListener(new BaseQuickAdapter.OnItemClickListener() {
+        adapter.setOnItemClickListener(new BaseQuickAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
                 FastClickCheckUtil.check(view);
-                Movie.Video video = gridAdapter.getData().get(position);
+                Movie.Video video = (Movie.Video) adapter.getData().get(position);
                 if (video != null) {
                     Bundle bundle = new Bundle();
                     bundle.putString("id", video.id);
@@ -268,9 +270,9 @@ public class GridFragment extends BaseLazyFragment {
                     if (page == 1) {
                         showSuccess();
                         isLoad = true;
-                        gridAdapter.setNewData(absXml.movie.videoList);
+                        adapter.setNewData(absXml.movie.videoList);
                     } else {
-                        gridAdapter.addData(absXml.movie.videoList);
+                        adapter.addData(absXml.movie.videoList);
                     }
                     page++;
                     maxPage = absXml.movie.pagecount;
@@ -280,9 +282,9 @@ public class GridFragment extends BaseLazyFragment {
                     }
                 }
                 if (page > maxPage) {
-                    gridAdapter.loadMoreEnd();
+                    adapter.loadMoreEnd();
                 } else {
-                    gridAdapter.loadMoreComplete();
+                    adapter.loadMoreComplete();
                 }
             }
         });
