@@ -8,6 +8,7 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
+import com.chad.library.adapter.base.BaseViewHolder;
 import com.github.tvbox.osc.R;
 import com.github.tvbox.osc.api.ApiConfig;
 import com.github.tvbox.osc.base.BaseLazyFragment;
@@ -18,6 +19,7 @@ import com.github.tvbox.osc.bean.SourceBean;
 import com.github.tvbox.osc.ui.activity.DetailActivity;
 import com.github.tvbox.osc.ui.activity.FastSearchActivity;
 import com.github.tvbox.osc.ui.activity.FastSearchActivity;
+import com.github.tvbox.osc.util.LOG;
 import com.github.tvbox.osc.ui.activity.SearchActivity;
 import com.github.tvbox.osc.ui.adapter.GridAdapter;
 import com.github.tvbox.osc.ui.dialog.GridFilterDialog;
@@ -40,6 +42,7 @@ import android.view.ViewGroup;
 public class GridFragment extends BaseLazyFragment {
     private MovieSort.SortData sortData = null;
     private TvRecyclerView mGridView;
+    private Class<SourceViewModel> viewoModelClass;
     private SourceViewModel sourceViewModel;
     private GridFilterDialog gridFilterDialog;
     private GridAdapter gridAdapter;
@@ -47,6 +50,10 @@ public class GridFragment extends BaseLazyFragment {
     private int maxPage = 1;
     private boolean isLoad = false;
     private boolean isTop = true;
+    
+     private int spanCount = 5;
+    private BaseQuickAdapter<Movie.Video, BaseViewHolder> adapter;
+    
  private View focusedView = null;
     private class GridInfo{
         public String sortID="";
@@ -60,12 +67,27 @@ public class GridFragment extends BaseLazyFragment {
     
     Stack<GridInfo> mGrids = new Stack<GridInfo>(); //ui栈
     
-    public static GridFragment newInstance(MovieSort.SortData sortData) {
-        return new GridFragment().setArguments(sortData);
+    public static GridFragment newInstance(MovieSort.SortData sortData, Class viewModelClass) {
+        GridFragment fragment = new GridFragment().setArguments(sortData, new GridAdapter(), viewModelClass, null);
+        return fragment;
     }
 
-    public GridFragment setArguments(MovieSort.SortData sortData) {
+       public static GridFragment newInstance(MovieSort.SortData sortData, BaseQuickAdapter<Movie.Video, BaseViewHolder> adapter, Class viewModelClass) {
+        GridFragment fragment = new GridFragment().setArguments(sortData, adapter, viewModelClass, null);
+        return fragment;
+    }
+
+    public static GridFragment newInstance(MovieSort.SortData sortData, BaseQuickAdapter<Movie.Video, BaseViewHolder> adapter, Class viewModelClass, Integer spanCount) {
+        GridFragment fragment = new GridFragment().setArguments(sortData, adapter, viewModelClass, spanCount);
+        return fragment;
+    }
+
+    public GridFragment setArguments(MovieSort.SortData sortData, BaseQuickAdapter<Movie.Video, BaseViewHolder> adapter, Class viewModelClass, Integer spanCount) {
         this.sortData = sortData;
+         this.adapter = adapter;
+        this.viewoModelClass = viewModelClass;
+        if(spanCount != null)
+            this.spanCount = spanCount;
         return this;
     }
 
