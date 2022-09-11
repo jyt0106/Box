@@ -61,9 +61,20 @@ public class Movie implements Serializable {
         public UrlBean urlBean;
         @XStreamAlias("des")
         public String des;// <![CDATA[权来]
+        @XStreamAlias("release") //首播
+        public String releaseDate;
+        @XStreamAlias("episodes") //总集数
+        public String totalEpisodes;
+        @XStreamAlias("alias") //别名
+        public String alias;
         public String sourceKey;
+        public String score;
+        public String scoreImdb;
+        public boolean isDetailLoaded;
+        public int retrieveDetailTried;
         @XStreamAlias("tag")
         public String tag;
+           
         
         @XStreamAlias("dl")
         public static class UrlBean implements Serializable {
