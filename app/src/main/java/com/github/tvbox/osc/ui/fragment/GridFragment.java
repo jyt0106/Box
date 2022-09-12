@@ -51,8 +51,7 @@ public class GridFragment extends BaseLazyFragment {
     private boolean isLoad = false;
     private boolean isTop = true;
     
-     private int spanCount = 5;
-    private BaseQuickAdapter<Movie.Video, BaseViewHolder> adapter;
+    
     
  private View focusedView = null;
     private class GridInfo{
@@ -67,26 +66,12 @@ public class GridFragment extends BaseLazyFragment {
     
     Stack<GridInfo> mGrids = new Stack<GridInfo>(); //ui栈
     
-    public static GridFragment newInstance(MovieSort.SortData sortData, Class viewModelClass) {
-      
+  
     }
 
-       public static GridFragment newInstance(MovieSort.SortData sortData, BaseQuickAdapter<Movie.Video, BaseViewHolder> adapter, Class viewModelClass) {
-        GridFragment fragment = new GridFragment().setArguments(sortData, adapter, viewModelClass, null);
-        return fragment;
-    }
-
-    public static GridFragment newInstance(MovieSort.SortData sortData, BaseQuickAdapter<Movie.Video, BaseViewHolder> adapter, Class viewModelClass, Integer spanCount) {
-        GridFragment fragment = new GridFragment().setArguments(sortData, adapter, viewModelClass, spanCount);
-        return fragment;
-    }
-
-    public GridFragment setArguments(MovieSort.SortData sortData, BaseQuickAdapter<Movie.Video, BaseViewHolder> adapter, Class viewModelClass, Integer spanCount) {
+    public GridFragment setArguments(MovieSort.SortData sortData) {
         this.sortData = sortData;
-         this.adapter = adapter;
-        this.viewoModelClass = viewModelClass;
-        if(spanCount != null)
-            this.spanCount = spanCount;
+       
         return this;
     }
 
@@ -174,8 +159,7 @@ public class GridFragment extends BaseLazyFragment {
         }else{
             mGridView.setLayoutManager(new V7GridLayoutManager(this.mContext, isBaseOnWidth() ? 5 : 6));
         }
-           mGridView.setAdapter(adapter);
-        mGridView.setLayoutManager(new V7GridLayoutManager(this.mContext, this.spanCount));
+          
         gridAdapter.setOnLoadMoreListener(new BaseQuickAdapter.RequestLoadMoreListener() {
             @Override
             public void onLoadMoreRequested() {
