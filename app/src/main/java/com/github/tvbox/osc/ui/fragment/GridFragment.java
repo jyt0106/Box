@@ -68,8 +68,7 @@ public class GridFragment extends BaseLazyFragment {
     Stack<GridInfo> mGrids = new Stack<GridInfo>(); //ui栈
     
     public static GridFragment newInstance(MovieSort.SortData sortData, Class viewModelClass) {
-       // GridFragment fragment = new GridFragment().setArguments(sortData, new GridAdapter(), viewModelClass, null);
-        return fragment;
+      
     }
 
        public static GridFragment newInstance(MovieSort.SortData sortData, BaseQuickAdapter<Movie.Video, BaseViewHolder> adapter, Class viewModelClass) {
