@@ -395,7 +395,7 @@ public class HomeActivity extends BaseActivity {
                         fragments.add(UserFragment.newInstance(null));
                     }
                 } else {
-                    fragments.add(GridFragment.newInstance(data, SourceViewModel.class));
+                    fragments.add(GridFragment.newInstance(data));
                 }
             }
             pageAdapter = new HomePageAdapter(getSupportFragmentManager(), fragments);
