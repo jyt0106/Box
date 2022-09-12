@@ -8,7 +8,6 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
-import com.chad.library.adapter.base.BaseViewHolder;
 import com.github.tvbox.osc.R;
 import com.github.tvbox.osc.api.ApiConfig;
 import com.github.tvbox.osc.base.BaseLazyFragment;
@@ -19,7 +18,6 @@ import com.github.tvbox.osc.bean.SourceBean;
 import com.github.tvbox.osc.ui.activity.DetailActivity;
 import com.github.tvbox.osc.ui.activity.FastSearchActivity;
 import com.github.tvbox.osc.ui.activity.FastSearchActivity;
-import com.github.tvbox.osc.util.LOG;
 import com.github.tvbox.osc.ui.activity.SearchActivity;
 import com.github.tvbox.osc.ui.adapter.GridAdapter;
 import com.github.tvbox.osc.ui.dialog.GridFilterDialog;
@@ -42,7 +40,6 @@ import android.view.ViewGroup;
 public class GridFragment extends BaseLazyFragment {
     private MovieSort.SortData sortData = null;
     private TvRecyclerView mGridView;
-    private Class<SourceViewModel> viewoModelClass;
     private SourceViewModel sourceViewModel;
     private GridFilterDialog gridFilterDialog;
     private GridAdapter gridAdapter;
@@ -50,9 +47,6 @@ public class GridFragment extends BaseLazyFragment {
     private int maxPage = 1;
     private boolean isLoad = false;
     private boolean isTop = true;
-    
-    
-    
  private View focusedView = null;
     private class GridInfo{
         public String sortID="";
@@ -66,12 +60,12 @@ public class GridFragment extends BaseLazyFragment {
     
     Stack<GridInfo> mGrids = new Stack<GridInfo>(); //ui栈
     
-  
+    public static GridFragment newInstance(MovieSort.SortData sortData) {
+        return new GridFragment().setArguments(sortData);
     }
 
     public GridFragment setArguments(MovieSort.SortData sortData) {
         this.sortData = sortData;
-       
         return this;
     }
 
@@ -159,11 +153,10 @@ public class GridFragment extends BaseLazyFragment {
         }else{
             mGridView.setLayoutManager(new V7GridLayoutManager(this.mContext, isBaseOnWidth() ? 5 : 6));
         }
-          
         gridAdapter.setOnLoadMoreListener(new BaseQuickAdapter.RequestLoadMoreListener() {
             @Override
             public void onLoadMoreRequested() {
-                adapter.setEnableLoadMore(true);
+                gridAdapter.setEnableLoadMore(true);
                 sourceViewModel.getList(sortData, page);
             }
         }, mGridView);
@@ -193,11 +186,11 @@ public class GridFragment extends BaseLazyFragment {
                 return false;
             }
         });
-        adapter.setOnItemClickListener(new BaseQuickAdapter.OnItemClickListener() {
+        gridAdapter.setOnItemClickListener(new BaseQuickAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
                 FastClickCheckUtil.check(view);
-                Movie.Video video = (Movie.Video) adapter.getData().get(position);
+                Movie.Video video = gridAdapter.getData().get(position);
                 if (video != null) {
                     Bundle bundle = new Bundle();
                     bundle.putString("id", video.id);
@@ -253,9 +246,9 @@ public class GridFragment extends BaseLazyFragment {
                     if (page == 1) {
                         showSuccess();
                         isLoad = true;
-                        adapter.setNewData(absXml.movie.videoList);
+                        gridAdapter.setNewData(absXml.movie.videoList);
                     } else {
-                        adapter.addData(absXml.movie.videoList);
+                        gridAdapter.addData(absXml.movie.videoList);
                     }
                     page++;
                     maxPage = absXml.movie.pagecount;
@@ -265,9 +258,9 @@ public class GridFragment extends BaseLazyFragment {
                     }
                 }
                 if (page > maxPage) {
-                    adapter.loadMoreEnd();
+                    gridAdapter.loadMoreEnd();
                 } else {
-                    adapter.loadMoreComplete();
+                    gridAdapter.loadMoreComplete();
                 }
             }
         });
