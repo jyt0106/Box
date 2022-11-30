@@ -141,7 +141,7 @@ public class PlayActivity extends BaseActivity {
     private void initView() {
 
         // takagen99 : Hide only when video playing
-        vidHideSysBar();
+        hideSystemUI(false);
 
         mHandler = new Handler(new Handler.Callback() {
             @Override
@@ -344,7 +344,7 @@ public class PlayActivity extends BaseActivity {
     void setSubtitleViewTextStyle(int style) {
         if (style == 0) {
             mController.mSubtitleView.setTextColor(getBaseContext().getResources().getColorStateList(R.color.color_FFFFFF));
-            mController.mSubtitleView.setShadowLayer(3, 2, 2, R.color.color_CC000000);
+            mController.mSubtitleView.setShadowLayer(3, 2, 2, R.color.color_000000_80);
         } else if (style == 1) {
             mController.mSubtitleView.setTextColor(getBaseContext().getResources().getColorStateList(R.color.color_FFB6C1));
             mController.mSubtitleView.setShadowLayer(3, 2, 2, R.color.color_FFFFFF);
@@ -854,7 +854,6 @@ public class PlayActivity extends BaseActivity {
         }
         if (!hasNext) {
             Toast.makeText(this, "已经是最后一集了", Toast.LENGTH_SHORT).show();
-            this.onBackPressed();
             return;
         }
         if (mVodInfo.reverseSort) {
