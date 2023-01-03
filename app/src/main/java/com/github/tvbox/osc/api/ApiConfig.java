@@ -34,6 +34,7 @@ import com.lzy.okgo.model.Response;
 import com.orhanobut.hawk.Hawk;
 import com.undcover.freedom.pyramid.PythonLoader;
 
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -164,6 +165,7 @@ public class ApiConfig {
         } else {
             configUrl = apiUrl;
         }
+        System.out.println("API URL :" + configUrl);
         String configKey = TempKey;
         OkGo.<String>get(configUrl)
                 .headers("User-Agent", userAgent)
@@ -225,7 +227,6 @@ public class ApiConfig {
                     }
                 });
     }
-
 
     public void loadJar(boolean useCache, String spider, LoadConfigCallback callback) {
         String[] urls = spider.split(";md5;");
@@ -376,43 +377,112 @@ public class ApiConfig {
             if (mDefaultParse == null)
                 setDefaultParse(parseBeanList.get(0));
         }
-        // 直播源
-        liveChannelGroupList.clear();           //修复从后台切换重复加载频道列表
-        try {
-            String lives = infoJson.get("lives").getAsJsonArray().toString();
-            int index = lives.indexOf("proxy://");
-            if (index != -1) {
-                int endIndex = lives.lastIndexOf("\"");
-                String url = lives.substring(index, endIndex);
-                url = DefaultConfig.checkReplaceProxy(url);
 
-                //clan
-                String extUrl = Uri.parse(url).getQueryParameter("ext");
-                if (extUrl != null && !extUrl.isEmpty()) {
-                    String extUrlFix;
-                    if (extUrl.startsWith("http") || extUrl.startsWith("clan://")) {
-                        extUrlFix = extUrl;
+        // takagen99: Check if Live URL is setup in Settings, if no, get from File Config
+        liveChannelGroupList.clear();           //修复从后台切换重复加载频道列表
+        String liveURL = Hawk.get(HawkConfig.LIVE_URL, "");
+        if (StringUtils.isBlank(liveURL)) {
+
+            try {
+                JsonObject livesOBJ = infoJson.get("lives").getAsJsonArray().get(0).getAsJsonObject();
+                String lives = livesOBJ.toString();
+                int index = lives.indexOf("proxy://");
+                if (index != -1) {
+                    int endIndex = lives.lastIndexOf("\"");
+                    String url = lives.substring(index, endIndex);
+                    url = DefaultConfig.checkReplaceProxy(url);
+
+                    //clan
+                    String extUrl = Uri.parse(url).getQueryParameter("ext");
+                    if (extUrl != null && !extUrl.isEmpty()) {
+                        String extUrlFix;
+                        if (extUrl.startsWith("http") || extUrl.startsWith("clan://")) {
+                            extUrlFix = extUrl;
+                        } else {
+                            extUrlFix = new String(Base64.decode(extUrl, Base64.DEFAULT | Base64.URL_SAFE | Base64.NO_WRAP), "UTF-8");
+                        }
+                        if (extUrlFix.startsWith("clan://")) {
+                            extUrlFix = clanContentFix(clanToAddress(apiUrl), extUrlFix);
+                        }
+
+                        // takagen99: Capture Live URL into Config
+                        System.out.println("Live URL :" + extUrlFix);
+                        Hawk.put(HawkConfig.LIVE_URL, extUrlFix);
+
+                        // Encoding the Live URL
+                        extUrlFix = Base64.encodeToString(extUrlFix.getBytes("UTF-8"), Base64.DEFAULT | Base64.URL_SAFE | Base64.NO_WRAP);
+                        url = url.replace(extUrl, extUrlFix);
+                    }
+
+                    // takagen99 : Getting EPG URL from File Config & put into Settings
+                    if (livesOBJ.has("epg")) {
+                        String epg = livesOBJ.get("epg").getAsString();
+                        String epgURL = Hawk.get(HawkConfig.EPG_URL, "");
+                        if (StringUtils.isBlank(epgURL)) {
+                            System.out.println("EPG URL :" + epg);
+                            Hawk.put(HawkConfig.EPG_URL, epg);
+                        }
+                    }
+
+                    // Populate Live Channel Listing
+                    LiveChannelGroup liveChannelGroup = new LiveChannelGroup();
+                    liveChannelGroup.setGroupName(url);
+                    liveChannelGroupList.add(liveChannelGroup);
+
+                } else {
+
+                    // if FongMi Live URL Formatting exists
+                    if (!lives.contains("type")) {
+                        loadLives(infoJson.get("lives").getAsJsonArray());
                     } else {
-                        extUrlFix = new String(Base64.decode(extUrl, Base64.DEFAULT | Base64.URL_SAFE | Base64.NO_WRAP), "UTF-8");
+                        JsonObject fengMiLives = infoJson.get("lives").getAsJsonArray().get(0).getAsJsonObject();
+                        String type = fengMiLives.get("type").getAsString();
+                        if (type.equals("0")) {
+                            String url = fengMiLives.get("url").getAsString();
+
+                            // takagen99 : Getting EPG URL from File Config & put into Settings
+                            if (fengMiLives.has("epg")) {
+                                String epg = fengMiLives.get("epg").getAsString();
+                                String epgURL = Hawk.get(HawkConfig.EPG_URL, "");
+                                if (StringUtils.isBlank(epgURL)) {
+                                    System.out.println("EPG URL :" + epg);
+                                    Hawk.put(HawkConfig.EPG_URL, epg);
+                                }
+                            }
+
+                            if (url.startsWith("http")) {
+                                // takagen99: Capture Live URL into Settings
+                                System.out.println("Live URL :" + url);
+                                Hawk.put(HawkConfig.LIVE_URL, url);
+                                url = Base64.encodeToString(url.getBytes("UTF-8"), Base64.DEFAULT | Base64.URL_SAFE | Base64.NO_WRAP);
+                            }
+
+                            // Populate Live Channel Listing
+                            url = "http://127.0.0.1:9978/proxy?do=live&type=txt&ext=" + url;
+                            LiveChannelGroup liveChannelGroup = new LiveChannelGroup();
+                            liveChannelGroup.setGroupName(url);
+                            liveChannelGroupList.add(liveChannelGroup);
+                        }
                     }
-//                    System.out.println("extUrlFix :"+extUrlFix);
-                    if (extUrlFix.startsWith("clan://")) {
-                        extUrlFix = clanContentFix(clanToAddress(apiUrl), extUrlFix);
-                    }
-                    extUrlFix = Base64.encodeToString(extUrlFix.getBytes("UTF-8"), Base64.DEFAULT | Base64.URL_SAFE | Base64.NO_WRAP);
-                    url = url.replace(extUrl, extUrlFix);
                 }
-//                System.out.println("urlLive :"+url);
-                LiveChannelGroup liveChannelGroup = new LiveChannelGroup();
-                liveChannelGroup.setGroupName(url);
-                liveChannelGroupList.add(liveChannelGroup);
-            } else {
-                if (lives.contains("group")) loadLives(infoJson.get("lives").getAsJsonArray());
+            } catch (Throwable th) {
+                th.printStackTrace();
             }
-        } catch (Throwable th) {
-            th.printStackTrace();
+        } else {
+            try {
+                // Populate Live Channel Listing using Live URL from Settings
+                System.out.println("Live URL :" + liveURL);
+                liveURL = Base64.encodeToString(liveURL.getBytes("UTF-8"), Base64.DEFAULT | Base64.URL_SAFE | Base64.NO_WRAP);
+                liveURL = "http://127.0.0.1:9978/proxy?do=live&type=txt&ext=" + liveURL;
+                LiveChannelGroup liveChannelGroup = new LiveChannelGroup();
+                liveChannelGroup.setGroupName(liveURL);
+                liveChannelGroupList.add(liveChannelGroup);
+            } catch (Throwable th) {
+                th.printStackTrace();
+            }
         }
-        //video parse rule for host
+
+        // Video parse rule for host
         if (infoJson.has("rules")) {
             VideoParseRuler.clearRule();
             for (JsonElement oneHostRule : infoJson.getAsJsonArray("rules")) {
@@ -443,7 +513,7 @@ public class ApiConfig {
             }
         }
 
-        String defaultIJKADS = "{\"ijk\":[{\"options\":[{\"name\":\"opensles\",\"category\":4,\"value\":\"0\"},{\"name\":\"overlay-format\",\"category\":4,\"value\":\"842225234\"},{\"name\":\"framedrop\",\"category\":4,\"value\":\"1\"},{\"name\":\"soundtouch\",\"category\":4,\"value\":\"1\"},{\"name\":\"start-on-prepared\",\"category\":4,\"value\":\"1\"},{\"name\":\"http-detect-rangeupport\",\"category\":1,\"value\":\"0\"},{\"name\":\"fflags\",\"category\":1,\"value\":\"fastseek\"},{\"name\":\"skip_loop_filter\",\"category\":2,\"value\":\"48\"},{\"name\":\"reconnect\",\"category\":4,\"value\":\"1\"},{\"name\":\"enable-accurateeek\",\"category\":4,\"value\":\"0\"},{\"name\":\"mediacodec\",\"category\":4,\"value\":\"0\"},{\"name\":\"mediacodec-auto-rotate\",\"category\":4,\"value\":\"0\"},{\"name\":\"mediacodec-handle-resolution-change\",\"category\":4,\"value\":\"0\"},{\"name\":\"mediacodec-hevc\",\"category\":4,\"value\":\"0\"},{\"name\":\"dns_cache_timeout\",\"category\":1,\"value\":\"600000000\"}],\"group\":\"软解码\"},{\"options\":[{\"name\":\"opensles\",\"category\":4,\"value\":\"0\"},{\"name\":\"overlay-format\",\"category\":4,\"value\":\"842225234\"},{\"name\":\"framedrop\",\"category\":4,\"value\":\"1\"},{\"name\":\"soundtouch\",\"category\":4,\"value\":\"1\"},{\"name\":\"start-on-prepared\",\"category\":4,\"value\":\"1\"},{\"name\":\"http-detect-rangeupport\",\"category\":1,\"value\":\"0\"},{\"name\":\"fflags\",\"category\":1,\"value\":\"fastseek\"},{\"name\":\"skip_loop_filter\",\"category\":2,\"value\":\"48\"},{\"name\":\"reconnect\",\"category\":4,\"value\":\"1\"},{\"name\":\"enable-accurateeek\",\"category\":4,\"value\":\"0\"},{\"name\":\"mediacodec\",\"category\":4,\"value\":\"1\"},{\"name\":\"mediacodec-auto-rotate\",\"category\":4,\"value\":\"1\"},{\"name\":\"mediacodec-handle-resolution-change\",\"category\":4,\"value\":\"1\"},{\"name\":\"mediacodec-hevc\",\"category\":4,\"value\":\"1\"},{\"name\":\"dns_cache_timeout\",\"category\":1,\"value\":\"600000000\"}],\"group\":\"硬解码\"}],\"ads\":[\"mimg.0c1q0l.cn\",\"www.googletagmanager.com\",\"www.google-analytics.com\",\"mc.usihnbcq.cn\",\"mg.g1mm3d.cn\",\"mscs.svaeuzh.cn\",\"cnzz.hhttm.top\",\"tp.vinuxhome.com\",\"cnzz.mmstat.com\",\"www.baihuillq.com\",\"s23.cnzz.com\",\"z3.cnzz.com\",\"c.cnzz.com\",\"stj.v1vo.top\",\"z12.cnzz.com\",\"img.mosflower.cn\",\"tips.gamevvip.com\",\"ehwe.yhdtns.com\",\"xdn.cqqc3.com\",\"www.jixunkyy.cn\",\"sp.chemacid.cn\",\"hm.baidu.com\",\"s9.cnzz.com\",\"z6.cnzz.com\",\"um.cavuc.com\",\"mav.mavuz.com\",\"wofwk.aoidf3.com\",\"z5.cnzz.com\",\"xc.hubeijieshikj.cn\",\"tj.tianwenhu.com\",\"xg.gars57.cn\",\"k.jinxiuzhilv.com\",\"cdn.bootcss.com\",\"ppl.xunzhuo123.com\",\"xomk.jiangjunmh.top\",\"img.xunzhuo123.com\",\"z1.cnzz.com\",\"s13.cnzz.com\",\"xg.huataisangao.cn\",\"z7.cnzz.com\",\"xg.huataisangao.cn\",\"z2.cnzz.com\",\"s96.cnzz.com\",\"q11.cnzz.com\",\"thy.dacedsfa.cn\",\"xg.whsbpw.cn\",\"s19.cnzz.com\",\"z8.cnzz.com\",\"s4.cnzz.com\",\"f5w.as12df.top\",\"ae01.alicdn.com\",\"www.92424.cn\",\"k.wudejia.com\",\"vivovip.mmszxc.top\",\"qiu.xixiqiu.com\",\"cdnjs.hnfenxun.com\",\"cms.qdwght.com\"]}";
+        String defaultIJKADS = "{\"ijk\":[{\"options\":[{\"name\":\"opensles\",\"category\":4,\"value\":\"0\"},{\"name\":\"overlay-format\",\"category\":4,\"value\":\"842225234\"},{\"name\":\"framedrop\",\"category\":4,\"value\":\"1\"},{\"name\":\"soundtouch\",\"category\":4,\"value\":\"1\"},{\"name\":\"start-on-prepared\",\"category\":4,\"value\":\"1\"},{\"name\":\"http-detect-rangeupport\",\"category\":1,\"value\":\"0\"},{\"name\":\"fflags\",\"category\":1,\"value\":\"fastseek\"},{\"name\":\"skip_loop_filter\",\"category\":2,\"value\":\"48\"},{\"name\":\"reconnect\",\"category\":4,\"value\":\"1\"},{\"name\":\"enable-accurate-seek\",\"category\":4,\"value\":\"0\"},{\"name\":\"mediacodec\",\"category\":4,\"value\":\"0\"},{\"name\":\"mediacodec-auto-rotate\",\"category\":4,\"value\":\"0\"},{\"name\":\"mediacodec-handle-resolution-change\",\"category\":4,\"value\":\"0\"},{\"name\":\"mediacodec-hevc\",\"category\":4,\"value\":\"0\"},{\"name\":\"dns_cache_timeout\",\"category\":1,\"value\":\"600000000\"}],\"group\":\"软解码\"},{\"options\":[{\"name\":\"opensles\",\"category\":4,\"value\":\"0\"},{\"name\":\"overlay-format\",\"category\":4,\"value\":\"842225234\"},{\"name\":\"framedrop\",\"category\":4,\"value\":\"1\"},{\"name\":\"soundtouch\",\"category\":4,\"value\":\"1\"},{\"name\":\"start-on-prepared\",\"category\":4,\"value\":\"1\"},{\"name\":\"http-detect-rangeupport\",\"category\":1,\"value\":\"0\"},{\"name\":\"fflags\",\"category\":1,\"value\":\"fastseek\"},{\"name\":\"skip_loop_filter\",\"category\":2,\"value\":\"48\"},{\"name\":\"reconnect\",\"category\":4,\"value\":\"1\"},{\"name\":\"enable-accurate-seek\",\"category\":4,\"value\":\"0\"},{\"name\":\"mediacodec\",\"category\":4,\"value\":\"1\"},{\"name\":\"mediacodec-auto-rotate\",\"category\":4,\"value\":\"1\"},{\"name\":\"mediacodec-handle-resolution-change\",\"category\":4,\"value\":\"1\"},{\"name\":\"mediacodec-hevc\",\"category\":4,\"value\":\"1\"},{\"name\":\"dns_cache_timeout\",\"category\":1,\"value\":\"600000000\"}],\"group\":\"硬解码\"}],\"ads\":[\"mimg.0c1q0l.cn\",\"www.googletagmanager.com\",\"www.google-analytics.com\",\"mc.usihnbcq.cn\",\"mg.g1mm3d.cn\",\"mscs.svaeuzh.cn\",\"cnzz.hhttm.top\",\"tp.vinuxhome.com\",\"cnzz.mmstat.com\",\"www.baihuillq.com\",\"s23.cnzz.com\",\"z3.cnzz.com\",\"c.cnzz.com\",\"stj.v1vo.top\",\"z12.cnzz.com\",\"img.mosflower.cn\",\"tips.gamevvip.com\",\"ehwe.yhdtns.com\",\"xdn.cqqc3.com\",\"www.jixunkyy.cn\",\"sp.chemacid.cn\",\"hm.baidu.com\",\"s9.cnzz.com\",\"z6.cnzz.com\",\"um.cavuc.com\",\"mav.mavuz.com\",\"wofwk.aoidf3.com\",\"z5.cnzz.com\",\"xc.hubeijieshikj.cn\",\"tj.tianwenhu.com\",\"xg.gars57.cn\",\"k.jinxiuzhilv.com\",\"cdn.bootcss.com\",\"ppl.xunzhuo123.com\",\"xomk.jiangjunmh.top\",\"img.xunzhuo123.com\",\"z1.cnzz.com\",\"s13.cnzz.com\",\"xg.huataisangao.cn\",\"z7.cnzz.com\",\"xg.huataisangao.cn\",\"z2.cnzz.com\",\"s96.cnzz.com\",\"q11.cnzz.com\",\"thy.dacedsfa.cn\",\"xg.whsbpw.cn\",\"s19.cnzz.com\",\"z8.cnzz.com\",\"s4.cnzz.com\",\"f5w.as12df.top\",\"ae01.alicdn.com\",\"www.92424.cn\",\"k.wudejia.com\",\"vivovip.mmszxc.top\",\"qiu.xixiqiu.com\",\"cdnjs.hnfenxun.com\",\"cms.qdwght.com\"]}";
         JsonObject defaultJson = new Gson().fromJson(defaultIJKADS, JsonObject.class);
         // 广告地址
         if (AdBlocker.isEmpty()) {
@@ -465,7 +535,8 @@ public class ApiConfig {
             ijkCodes = new ArrayList<>();
             boolean foundOldSelect = false;
             String ijkCodec = Hawk.get(HawkConfig.IJK_CODEC, "");
-            for (JsonElement opt : defaultJson.get("ijk").getAsJsonArray()) {
+            JsonArray ijkJsonArray = infoJson.has("ijk") ? infoJson.get("ijk").getAsJsonArray() : defaultJson.get("ijk").getAsJsonArray();
+            for (JsonElement opt : ijkJsonArray) {
                 JsonObject obj = (JsonObject) opt;
                 String name = obj.get("group").getAsString();
                 LinkedHashMap<String, String> baseOpt = new LinkedHashMap<>();
@@ -690,4 +761,12 @@ public class ApiConfig {
         }
         return content;
     }
+
+    String miTV(String url) {
+        if (url.startsWith("p") || url.startsWith("mitv")) {
+
+        }
+        return url;
+    }
+
 }
