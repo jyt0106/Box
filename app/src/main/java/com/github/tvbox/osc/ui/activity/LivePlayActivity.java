@@ -7,6 +7,7 @@ import android.animation.AnimatorListenerAdapter;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Base64;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,12 +35,14 @@ import com.github.tvbox.osc.bean.LiveSettingGroup;
 import com.github.tvbox.osc.bean.LiveSettingItem;
 import com.github.tvbox.osc.event.RefreshEvent;
 import com.github.tvbox.osc.player.controller.LiveController;
+import com.github.tvbox.osc.ui.adapter.ApiHistoryDialogAdapter;
 import com.github.tvbox.osc.ui.adapter.LiveChannelGroupAdapter;
 import com.github.tvbox.osc.ui.adapter.LiveChannelItemAdapter;
 import com.github.tvbox.osc.ui.adapter.LiveEpgAdapter;
 import com.github.tvbox.osc.ui.adapter.LiveEpgDateAdapter;
 import com.github.tvbox.osc.ui.adapter.LiveSettingGroupAdapter;
 import com.github.tvbox.osc.ui.adapter.LiveSettingItemAdapter;
+import com.github.tvbox.osc.ui.dialog.ApiHistoryDialog;
 import com.github.tvbox.osc.ui.dialog.LivePasswordDialog;
 import com.github.tvbox.osc.util.EpgUtil;
 import com.github.tvbox.osc.util.FastClickCheckUtil;
@@ -1400,6 +1403,39 @@ public class LivePlayActivity extends BaseActivity {
                         select = !Hawk.get(HawkConfig.LIVE_CROSS_GROUP, false);
                         Hawk.put(HawkConfig.LIVE_CROSS_GROUP, select);
                         break;
+                    case 4:
+                        // takagen99 : Added Live History list selection - 直播列表
+                        ArrayList<String> liveHistory = Hawk.get(HawkConfig.LIVE_HISTORY, new ArrayList<String>());
+                        if (liveHistory.isEmpty())
+                            return;
+                        String current = Hawk.get(HawkConfig.LIVE_URL, "");
+                        int idx = 0;
+                        if (liveHistory.contains(current))
+                            idx = liveHistory.indexOf(current);
+                        ApiHistoryDialog dialog = new ApiHistoryDialog(LivePlayActivity.this);
+                        dialog.setTip(getString(R.string.dia_history_live));
+                        dialog.setAdapter(new ApiHistoryDialogAdapter.SelectDialogInterface() {
+                            @Override
+                            public void click(String liveURL) {
+                                Hawk.put(HawkConfig.LIVE_URL, liveURL);
+                                liveChannelGroupList.clear();
+                                try {
+                                    liveURL = Base64.encodeToString(liveURL.getBytes("UTF-8"), Base64.DEFAULT | Base64.URL_SAFE | Base64.NO_WRAP);
+                                    liveURL = "http://127.0.0.1:9978/proxy?do=live&type=txt&ext=" + liveURL;
+                                    loadProxyLives(liveURL);
+                                } catch (Throwable th) {
+                                    th.printStackTrace();
+                                }
+                                dialog.dismiss();
+                            }
+
+                            @Override
+                            public void del(String value, ArrayList<String> data) {
+                                Hawk.put(HawkConfig.LIVE_HISTORY, data);
+                            }
+                        }, liveHistory, idx);
+                        dialog.show();
+                        break;
                 }
                 liveSettingItemAdapter.selectItem(position, select, false);
                 break;
@@ -1527,7 +1563,7 @@ public class LivePlayActivity extends BaseActivity {
         ArrayList<String> scaleItems = new ArrayList<>(Arrays.asList("默认", "16:9", "4:3", "填充", "原始", "裁剪"));
         ArrayList<String> playerDecoderItems = new ArrayList<>(Arrays.asList("系统", "ijk硬解", "ijk软解", "exo"));
         ArrayList<String> timeoutItems = new ArrayList<>(Arrays.asList("5s", "10s", "15s", "20s", "25s", "30s"));
-        ArrayList<String> personalSettingItems = new ArrayList<>(Arrays.asList("显示时间", "显示网速", "换台反转", "跨选分类"));
+        ArrayList<String> personalSettingItems = new ArrayList<>(Arrays.asList("显示时间", "显示网速", "换台反转", "跨选分类", "直播列表"));
         itemsArrayList.add(sourceItems);
         itemsArrayList.add(scaleItems);
         itemsArrayList.add(playerDecoderItems);
