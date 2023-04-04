@@ -425,6 +425,8 @@ public class SourceViewModel extends ViewModel {
     // detailContent
     public void getDetail(String sourceKey, String id) {
         SourceBean sourceBean = ApiConfig.get().getSource(sourceKey);
+		if (sourceBean == null)
+			detailResult.postValue(null);
         int type = sourceBean.getType();
         if (type == 3) {
             spThreadPool.execute(new Runnable() {
@@ -680,6 +682,8 @@ public class SourceViewModel extends ViewModel {
                     result.put("url", url);
                 }
                 result.put("playUrl", playUrl);
+                result.put("proKey", progressKey);
+                result.put("subtKey", subtitleKey);
                 result.put("flag", playFlag);
                 playResult.postValue(result);
             } catch (Throwable th) {
@@ -709,6 +713,7 @@ public class SourceViewModel extends ViewModel {
                                 JSONObject result = new JSONObject(json);
                                 result.put("key", url);
                                 result.put("proKey", progressKey);
+                                result.put("subtKey", subtitleKey);
                                 if (!result.has("flag"))
                                     result.put("flag", playFlag);
                                 playResult.postValue(result);
@@ -833,7 +838,8 @@ public class SourceViewModel extends ViewModel {
                         urlInfo.beanList = infoBeanList;
                     }
                 }
-                video.sourceKey = sourceKey;
+                if (video.sourceKey == null)
+                    video.sourceKey = sourceKey;
             }
         }
     }

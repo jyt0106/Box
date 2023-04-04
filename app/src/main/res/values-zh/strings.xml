@@ -20,6 +20,8 @@
     <string name="hm_file">文件</string>
     <string name="hm_fav">收藏</string>
     <string name="hm_setting">设置</string>
+    <string name="hm_style_line">一行显示</string>
+    <string name="hm_style_grid">多行显示</string>
     <string name="hm_hist_del">已删除当前记录</string>
     <string name="hm_cache_del">已删除缓存</string>
 
@@ -28,6 +30,7 @@
     <string name="det_expand">全屏</string>
     <string name="det_search">快搜</string>
     <string name="det_sort">倒序</string>
+    <string name="det_push">推送</string>
     <string name="det_fav">收藏</string>
     <string name="det_fav_add">已添加收藏</string>
     <string name="det_fav_del">已取消收藏</string>
@@ -48,6 +51,7 @@
     <string name="mn_home">数据源</string>
     <string name="mn_home_show">数据源显示</string>
     <string name="mn_home_type">推荐</string>
+    <string name="mn_icon">按钮位置</string>
     <string name="mn_history_num">历史条数</string>
     <string name="mn_wall_change">换张壁纸</string>
     <string name="mn_wall_load">壁纸更换中</string>
@@ -63,14 +67,17 @@
     <string name="mn_backup">数据备份还原</string>
     <string name="mn_dns">安全DNS</string>
     <string name="mn_locale">语言</string>
+    <string name="mn_theme">主题</string>
     <string name="mn_about">关于</string>
 
     // Settings Dialog Pop-Up //
     <string name="dia_source">请选择数据源</string>
     <string name="dia_hm_type">请选择列表数据</string>
+    <string name="dia_hm_icon">首页按钮位置</string>
     <string name="dia_history">历史条数保留</string>
-    <string name="dia_history_list">历史配置列表</string>
-    <string name="dia_history_live">历史直播列表</string>
+    <string name="dia_history_list">配置历史列表</string>
+    <string name="dia_history_live">直播历史列表</string>
+    <string name="dia_history_epg">EPG历史列表</string>
     <string name="dia_player">请选择默认播放器</string>
     <string name="dia_decode">请选择IJK解码</string>
     <string name="dia_search">请选择搜索视图</string>
@@ -80,6 +87,7 @@
     <string name="dia_bkpkg">点击下方数据还原</string>
     <string name="dia_dns">请选择安全DNS</string>
     <string name="dia_locale">请选择应用语言</string>
+    <string name="dia_theme">请选择主题</string>
 
     // Settings Backup Restore Page //
     <string name="set_bkup_ok">备份成功!</string>
@@ -95,6 +103,9 @@
     <string name="set_permission_fail2">获取存储权限失败,请在系统设置中开启</string>
 
     // Activity Page //
+    <string name="act_app">我的应用</string>
+    <string name="act_app_sel">确定键删除当前选中应用</string>
+    <string name="act_app_rm">删除应用</string>
     <string name="act_fav">收藏夹</string>
     <string name="act_fav_sel">确定键删除当前选中收藏</string>
     <string name="act_fav_rm">删除收藏</string>
@@ -136,5 +147,25 @@
     <string name="vod_sub_delay">延迟</string>
     <string name="vod_sub_search">搜索</string>
     <string name="vod_sub_off">字幕已关闭</string>
+
+    // EXO Player
+    <string name="exo_track_selection_title_video">视频</string>
+    <string name="exo_track_selection_title_audio">音频</string>
+    <string name="exo_track_selection_title_text">文字</string>
+    <string name="exo_track_selection_none">无</string>
+    <string name="exo_track_selection_auto">自动</string>
+    <string name="exo_track_unknown">未知</string>
+    <string name="exo_track_resolution">%1$d × %2$d</string>
+    <string name="exo_track_mono">单声道</string>
+    <string name="exo_track_stereo">立体声</string>
+    <string name="exo_track_surround">环绕声</string>
+    <string name="exo_track_surround_5_point_1">5.1 环绕声</string>
+    <string name="exo_track_surround_7_point_1">7.1 环绕声</string>
+    <string name="exo_track_role_alternate">替用轨</string>
+    <string name="exo_track_role_supplementary">补充轨</string>
+    <string name="exo_track_role_commentary">旁白</string>
+    <string name="exo_track_role_closed_captions">字幕</string>
+    <string name="exo_track_bitrate">%1$.2f Mbps</string>
+    <string name="exo_item_list">%1$s，%2$s</string>
 
 </resources>

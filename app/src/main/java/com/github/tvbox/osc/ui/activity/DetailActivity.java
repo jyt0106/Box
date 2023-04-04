@@ -16,6 +16,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.text.Html;
 import android.text.TextUtils;
+import android.util.Rational;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -41,8 +42,10 @@ import com.github.tvbox.osc.bean.VodInfo;
 import com.github.tvbox.osc.cache.RoomDataManger;
 import com.github.tvbox.osc.event.RefreshEvent;
 import com.github.tvbox.osc.picasso.RoundTransformation;
+import com.github.tvbox.osc.player.controller.VodController;
 import com.github.tvbox.osc.ui.adapter.SeriesAdapter;
 import com.github.tvbox.osc.ui.adapter.SeriesFlagAdapter;
+import com.github.tvbox.osc.ui.dialog.PushDialog;
 import com.github.tvbox.osc.ui.dialog.QuickSearchDialog;
 import com.github.tvbox.osc.ui.fragment.PlayFragment;
 import com.github.tvbox.osc.util.DefaultConfig;
@@ -105,6 +108,7 @@ public class DetailActivity extends BaseActivity {
     private TextView tvDes;
     private TextView tvPlay;
     private TextView tvSort;
+    private TextView tvPush;
     private TextView tvQuickSearch;
     private TextView tvCollect;
     private TvRecyclerView mGridViewFlag;
@@ -161,6 +165,7 @@ public class DetailActivity extends BaseActivity {
         tvDes = findViewById(R.id.tvDes);
         tvPlay = findViewById(R.id.tvPlay);
         tvSort = findViewById(R.id.tvSort);
+        tvPush = findViewById(R.id.tvPush);
         tvCollect = findViewById(R.id.tvCollect);
         tvQuickSearch = findViewById(R.id.tvQuickSearch);
         tvPlayUrl = findViewById(R.id.tvPlayUrl);
@@ -203,6 +208,13 @@ public class DetailActivity extends BaseActivity {
                     insertVod(sourceKey, vodInfo);
                     seriesAdapter.notifyDataSetChanged();
                 }
+            }
+        });
+        tvPush.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                PushDialog pushDialog = new PushDialog(mContext);
+                pushDialog.show();
             }
         });
         tvPlay.setOnClickListener(new View.OnClickListener() {
@@ -368,6 +380,16 @@ public class DetailActivity extends BaseActivity {
             }
         });
         setLoadSir(llLayout);
+        tvName.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ClipboardManager clipboard = (ClipboardManager) DetailActivity.this.getSystemService(Context.CLIPBOARD_SERVICE);
+                String cpContent = "视频ID：" + vodId + "，图片地址：" + (mVideo == null ? "" : mVideo.pic);
+                ClipData clipData = ClipData.newPlainText(null, cpContent);
+                clipboard.setPrimaryClip(clipData);
+                Toast.makeText(DetailActivity.this, "已复制" + cpContent, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private List<Runnable> pauseRunnable = null;
@@ -644,6 +666,47 @@ public class DetailActivity extends BaseActivity {
         }
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void pushVod(RefreshEvent event) {
+        if (event.type == RefreshEvent.TYPE_PUSH_VOD) {
+            if (event.obj != null) {
+                List<String> data = (List<String>) event.obj;
+                OkGo.getInstance().cancelTag("pushVod");
+                OkGo.<String>post("http://" + data.get(0) + ":" + data.get(1) + "/action")
+                        .tag("pushVod")
+                        .params("id", vodId)
+                        .params("sourceKey", sourceKey)
+                        .params("do", "mirror")
+                        .execute(new AbsCallback<String>() {
+                            @Override
+                            public String convertResponse(okhttp3.Response response) throws Throwable {
+                                if (response.body() != null) {
+                                    return response.body().string();
+                                } else {
+                                    Toast.makeText(DetailActivity.this, "推送失败，填的地址可能不对", Toast.LENGTH_SHORT).show();
+                                    throw new IllegalStateException("网络请求错误");
+                                }
+                            }
+		        
+                            @Override
+                            public void onSuccess(Response<String> response) {
+                                String r = response.body();
+                                if ("mirrored".equals(r))
+                                    Toast.makeText(DetailActivity.this, "推送成功", Toast.LENGTH_SHORT).show();
+                                else
+                                    Toast.makeText(DetailActivity.this, "推送失败，远端tvbox版本不支持", Toast.LENGTH_SHORT).show();
+                            }
+
+                            @Override
+                            public void onError(Response<String> response) {
+                                super.onError(response);
+                                Toast.makeText(DetailActivity.this, "推送失败，填的地址可能不对", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+            }
+        }
+    }
+
     private String searchTitle = "";
     private boolean hadQuickStart = false;
     private final List<Movie.Video> quickSearchData = new ArrayList<>();
@@ -782,20 +845,35 @@ public class DetailActivity extends BaseActivity {
         OkGo.getInstance().cancelTag("fenci");
         OkGo.getInstance().cancelTag("detail");
         OkGo.getInstance().cancelTag("quick_search");
+        OkGo.getInstance().cancelTag("pushVod");
         EventBus.getDefault().unregister(this);
     }
 
-    boolean PIP = Hawk.get(HawkConfig.PIC_IN_PIC, false);
+    boolean PiPON = Hawk.get(HawkConfig.PIC_IN_PIC, false);
 
     @Override
     public void onUserLeaveHint() {
         // takagen99 : Additional check for external player
-        if (supportsPiPMode() && showPreview && !playFragment.extPlay && PIP) {
+        if (supportsPiPMode() && showPreview && !playFragment.extPlay && PiPON) {
+            // Calculate Video Resolution
+            int vWidth = playFragment.mVideoView.getVideoSize()[0];
+            int vHeight = playFragment.mVideoView.getVideoSize()[1];
+            Rational ratio = null;
+            if (vWidth != 0) {
+                if ((((double) vWidth) / ((double) vHeight)) > 2.39) {
+                    vHeight = (int) (((double) vWidth) / 2.35);
+                }
+                ratio = new Rational(vWidth, vHeight);
+            } else {
+                ratio = new Rational(16, 9);
+            }
             List<RemoteAction> actions = new ArrayList<>();
             actions.add(generateRemoteAction(android.R.drawable.ic_media_previous, PIP_BOARDCAST_ACTION_PREV, "Prev", "Play Previous"));
             actions.add(generateRemoteAction(android.R.drawable.ic_media_play, PIP_BOARDCAST_ACTION_PLAYPAUSE, "Play", "Play/Pause"));
             actions.add(generateRemoteAction(android.R.drawable.ic_media_next, PIP_BOARDCAST_ACTION_NEXT, "Next", "Play Next"));
-            PictureInPictureParams params = new PictureInPictureParams.Builder().setActions(actions).build();
+            PictureInPictureParams params = new PictureInPictureParams.Builder()
+                    .setAspectRatio(ratio)
+                    .setActions(actions).build();
             if (!fullWindows) {
                 toggleFullPreview();
             }
@@ -835,7 +913,7 @@ public class DetailActivity extends BaseActivity {
                     } else if (currentStatus == PIP_BOARDCAST_ACTION_PLAYPAUSE) {
                         playFragment.getVodController().togglePlay();
                     } else if (currentStatus == PIP_BOARDCAST_ACTION_NEXT) {
-                        playFragment.playNext();
+                        playFragment.playNext(false);
                     }
                 }
             };
@@ -849,9 +927,11 @@ public class DetailActivity extends BaseActivity {
 
     @Override
     public void onBackPressed() {
+        boolean showPreview = Hawk.get(HawkConfig.SHOW_PREVIEW, true);
         if (fullWindows) {
             if (playFragment.onBackPressed())
                 return;
+            VodController.mProgressTop.setVisibility(View.INVISIBLE);
             toggleFullPreview();
             mGridView.requestFocus();
             return;
@@ -860,6 +940,8 @@ public class DetailActivity extends BaseActivity {
                 seriesFlagFocus.requestFocus();
                 return;
             }
+        } else if (showPreview) {
+            playFragment.mVideoView.release();
         }
         super.onBackPressed();
     }
@@ -890,7 +972,7 @@ public class DetailActivity extends BaseActivity {
     // preview : true 开启 false 关闭
     VodInfo previewVodInfo = null;
     boolean showPreview = Hawk.get(HawkConfig.SHOW_PREVIEW, true);
-    boolean fullWindows = false;
+    public boolean fullWindows = false;
     ViewGroup.LayoutParams windowsPreview = null;
     ViewGroup.LayoutParams windowsFull = null;
 
@@ -912,6 +994,7 @@ public class DetailActivity extends BaseActivity {
         // 全屏下禁用详情页几个按键的焦点 防止上键跑过来 : Disable buttons when full window
         tvPlay.setFocusable(!fullWindows);
         tvSort.setFocusable(!fullWindows);
+        tvPush.setFocusable(!fullWindows);
         tvCollect.setFocusable(!fullWindows);
         tvQuickSearch.setFocusable(!fullWindows);
         toggleSubtitleTextSize();
